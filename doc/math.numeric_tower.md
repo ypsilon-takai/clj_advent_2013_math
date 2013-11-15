@@ -264,19 +264,18 @@ sample> (nt/sqrt 169)
 sample> (class *1)
 java.lang.Long
 ```
+負の数を与えると、例外ではなく、Double/NaNが返ります。
+
+```clojure
+clj-advent-2013-math.sample> (nt/sqrt -1)
+NaN
+```
 
 `exact-integer-sqrt`は平方根の整数版です。
 
 ```clojure
 sample> (nt/exact-integer-sqrt 10)
 [3 1]
-```
-
-負の数を与えると、例外ではなく、Double/NaNが返ります。
-
-```clojure
-clj-advent-2013-math.sample> (nt/sqrt -1)
-NaN
 ```
 
 このように、平方根のfloorとその数を2乗して元の数から引いた余りが入った
