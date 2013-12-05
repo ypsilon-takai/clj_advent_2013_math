@@ -1,19 +1,5 @@
-# contribƒ‰ƒCƒuƒ‰ƒŠ‚Ìmath.numeric-tower‚É‚Â‚¢‚Ä
 
-‚±‚±‚É‚ÍAClojure Contrib Library Advent Calendar 2013 ‚Ì‹L–‚Ìƒtƒ@ƒCƒ‹‚ª“ü‚Á‚Ä‚¢‚Ü‚·B
+[Clojure Contrib Library Advent Calendar 2013 ](http://connpass.com/event/3991/)ã®è¨˜äº‹ã®ã€åƒ•ã®æ‹…å½“åˆ†ã®è¨˜äº‹ã®ãƒ‡ãƒ¼ã‚¿ãŒå…¥ã£ã¦ã„ã¾ã™ã€‚
 
-## Clojure Contrib Library Advent Calendar 2013
+å†…å®¹ã¯ã€wikiã‚’è¦‹ã¦ãã ã•ã„ã€‚
 
-[‚±‚±‚Éî•ñ‚ª‚ ‚è‚Ü‚·B](http://connpass.com/event/3991/)
-
-## ‹L–
-
-‹L––{‘Ì‚ÍAdocƒfƒBƒŒƒNƒgƒŠ‚É“ü‚Á‚Ä‚¢‚Ü‚·B
-
-‹L–‚ÅŒ¾‹y‚µ‚½ƒ\[ƒXƒR[ƒh‚ÍsrcƒfƒBƒŒƒNƒgƒŠ‚ğŒ©‚Ä‚­‚¾‚³‚¢B
-
-## License
-
-Copyright (c) 2013 ypsilon.takai@gmail.com
-
-Distributed under the Eclipse Public License, the same as Clojure.
