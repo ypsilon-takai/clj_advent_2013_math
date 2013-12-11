@@ -5,4 +5,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/math.numeric-tower "0.0.2"]
-                 [org.clojure/math.combinatorics "0.0.7"]])
+                 [org.clojure/math.combinatorics "0.0.7"]
+                 [org.clojure/core.memoize "0.5.6"]])
