@@ -27,9 +27,10 @@ clojure1.2以前は、clojure.contrib.mathという名前でした。
 
 
 ## 使いかた
-Leiningenを使うことを前提に説明します。
 
 ### インストール
+Leiningenを使うことを前提に説明します。
+
 プロジェクトの`project.clj`の`:dependencies`に
 以下のエントリを追加します。このサイトの`project.clj`も参考にしてくだ
 さい。

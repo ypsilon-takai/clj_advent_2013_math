@@ -27,9 +27,11 @@ math.combinatricsは、順列/組み合わせに関連する関数を提供します。
 
 
 ## 使いかた
-Leiningenを使うことを前提に説明します。
+
 
 ### インストール
+Leiningenを使うことを前提に説明します。
+
 プロジェクトの`project.clj`の`:dependencies`に
 以下のエントリを追加します。このサイトの`project.clj`も参考にしてくだ
 さい。
