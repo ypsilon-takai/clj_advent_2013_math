@@ -216,7 +216,7 @@ _最後に使われてから最も時間の経った_ものから削除されます。
 
 ```
 user> (def lru3-twice (memo/lru twice :lru/threshold 3))     ★ 領域3つで作成
-#'user/lru3-twice
+'user/lru3-twice
 
 user> (time (lru3-twice 1))
 "Elapsed time: 39.583961 msecs"
@@ -241,12 +241,12 @@ user> (time (lru3-twice 3))
 6
 ```
 
-####lu
+#### lu
 _最も使われる頻度の少ないもの_から捨てられます。
 
 ```
 user> (def lu3-twice (memo/lu twice :lu/threshold 3)) ★ 領域3つで作成
-#'user/lu3-twice
+'user/lu3-twice
 user> (time (lu3-twice 1))
 "Elapsed time: 10.05341 msecs"
 2
@@ -282,7 +282,175 @@ user> (time (lu3-twice 3))
 6
 ```
 
-####ttl
+#### ttl
 他の3つと違って、_時間を閾値_とします。 一定の時間が経過すると消されます。
+この時間は、そのデータが登録されてからの時間で、利用されてもリセットされません。
+
+```clojure
+(def ttl10-twice (memo/ttl twice :ttl/threshold 10000))
+```
+
+ttlのthresholdはミリ秒単位なので、ここでは10秒を指定しています。
+
+```
+user> (dotimes [n 11] 
+        (time (ttl10-twice 3))
+        (Thread/sleep 1000))
+"Elapsed time: 16.104028 msecs"
+"Elapsed time: 0.15013 msecs"
+"Elapsed time: 0.153979 msecs"
+"Elapsed time: 0.159478 msecs"
+"Elapsed time: 0.163878 msecs"
+"Elapsed time: 0.162228 msecs"
+"Elapsed time: 0.173776 msecs"
+"Elapsed time: 0.160029 msecs"
+"Elapsed time: 0.155079 msecs"
+"Elapsed time: 0.100637 msecs"
+"Elapsed time: 10.269865 msecs" ★ 10秒たったので消えました。
+nil
+```
+
+
+
+
+
+
+
+### 使用例
+メモ化機能は、コストがかかり、しかも、ひんぱんに再計算をする必要がある場合に効果がありますが、動的計画法とか再帰の計算にも使うことができます。
+
+恒例のフィボナッチ数列の例で使ってみます。
+
+```clojure
+(defn fibo [n]
+  (if (< n 2)
+    1
+    (+ (fibo (- n 2))
+       (fibo (- n 1)))))
+
+(def memo-fib (memo/fifo fibo))
+```
+
+使ってみましょう。 memoizedライブラリには、snapshotという関数が用意されていて、メモ化領域の内容を確認することができます。
+
+```
+user> (memo-fib 2)
+2
+user> (memo-fib 3)
+3
+user> (memo/snapshot memo-fib)
+{[3] 3, [2] 2}
+```
+
+このように、ちゃんとメモされているのがわかります。
+ところが、10で呼び出すと、
+
+```
+user> (memo-fib 10)
+89
+user> (memo/snapshot memo-fib)
+{[10] 89, [3] 3, [2] 2}
+```
+
+このように、10の結果だけしかメモされません。
+10を計算するために、9,8...とそれ以下の結果を計算しているはずなのですが、それらはメモされていません。
+これは、メモ化されているのが、ここではmemo-fibであって、再帰ルートに入ったときに呼ばれるのが、元の関数fiboだからなのです。
+そんなときは、元の名前で再定義してあげればいいのです。
+
+```
+user> (def fibo (memo/fifo fibo))
+
+user> (fibo 10)
+89
+user> (memo/snapshot fibo)
+{[1] 1, [2] 2, [3] 3, [4] 5, [5] 8, [6] 13, [7] 21, [8] 34, [9] 55, [10] 89, [0] 1}
+
+```
+
+こうしてしまうと、元の関数にアクセスできなくなってしまいますが、メモ化を解除するために、memo-unwrapという関数が提供されています。
+
+```
+user> (memo/memo-unwrap fibo)
+#<user$fibo user$fibo@2718f858>
+```
+
+さて、これを使って多きなフィボナッチ数を求めてみましょう。
+
+
+```clojure
+(defn fibo [n]
+  (if (< n 2)
+    1N
+    (+ (fibo (- n 2))
+       (fibo (- n 1)))))
+
+(def fibo (memo/fifo fibo :fifo/threshold 3))
+
+(->> (map fibo (iterate inc 0N))  ★ 小さい方から順に求めます。
+     (drop 10000)
+     (first))                     ★ 10001番目を取ります。
+
+"Elapsed time: 129.03515 msecs"
+```
+
+元の二重再帰のやりかただと10000番目は計算できませんが、これで計算できます。
+ただし、再帰を一段だけで抑えこむために、小さいものから順に求めていく必要があります。
+
+評価戦略は、古いものがいらないので、fifoで、直前と1つ前のものだけわかればいいので、現在計算中を含めて領域は3つで充分です。
+
+
+### 初期値の設定
+memoizeのインターフェースには、baseという引数があって、初期値を設定できるようなことが書いてあります。
+ところが、それらしい値を入れてもうまく動きません。
+
+```
+user> (def fifo-twice (memo/fifo twice {[3] "fiz"}))
+#'user/fifo-twice
+user> (fifo-twice 3)
+ClassCastException java.lang.String cannot be cast to java.util.concurrent.Future  clojure.core/deref-future (core.clj:2108)
+```
+
+ソースを読んでみると、与えたマップはそのままメモ化領域に保存されるのに対して、計算時にはメモ化領域の値にはfutureが設定されるようになっていることが原因のようです。
+
+むりやり回避するためには、こんなことをすればよさそうです。
+
+```clojure
+(defn make-base [seed]
+  (into {}
+        (for [[k v] seed]
+          [k (reify
+               clojure.lang.IDeref
+               (deref [this] v))])))
+
+(def fifo-twice
+  (memo/fifo twice (make-base {[3] "fiz"})))
+```
+
+やってはみたものの、あまり役には立ちそうにないですね。
+
+```
+user> (fifo-twice 3)
+"fiz"
+user> (fifo-twice 2)
+4
+user> (memo/snapshot fifo-twice)
+{[2] 4, [3] "fiz"}
+```
+
+
+## まとめ
+既存関数にメモ化機能を追加できてしまうというのは、関数型らしい機能です。問題領域によってはとても便利に使うことができます。
+
+また、このライブラリは、もとからclojureにあるmemoize関数と異なり、メモ化領域を制御できるようにしてあるため、実用のプログラムに組み込んで使いやすくなっています。
+
+
+記事としては、もうちょっといろいろ書こうと思っていたのですが、時間切れです。もしかすると、後で足すかもしれません。補助関数とか、使用例とか。
+
+
+
+
+
+
+
 
 

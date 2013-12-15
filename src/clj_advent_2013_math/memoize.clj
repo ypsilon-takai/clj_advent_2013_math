@@ -18,10 +18,36 @@
 
 (def lu3-twice (memo/lu twice :lu/threshold 3))
 
+(def ttl10-twice (memo/ttl twice :ttl/threshold 10000))
+
+;; fibonatti
+
+(defn fibo [n]
+  (if (< n 2)
+    1N
+    (+ (fibo (- n 2))
+       (fibo (- n 1)))))
+
+(def fibo (memo/fifo fibo :fifo/threshold 3))
+
+(first
+ (drop 10000
+       ))
+
+(->> (map fibo (iterate inc 0N))  
+     (drop 10000)
+     (first))
+
+
+;; Base argument
+
 (defn make-base [seed]
   (into {}
         (for [[k v] seed]
           [k (reify
                clojure.lang.IDeref
                (deref [this] v))])))
+
+(def fifo-twice
+  (memo/fifo twice (make-base {[3] "fiz"})))
 
