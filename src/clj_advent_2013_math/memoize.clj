@@ -9,6 +9,13 @@
   (* x 2))
 
 
+;; referential transparency
+(defn make-acc []
+  (let [acc (atom 0)]
+    (fn [n]
+      (swap! acc + n)
+      @acc)))
+
 ;; basic usage
 (def fifo-twice (memo/fifo twice))
 
@@ -30,16 +37,12 @@
 
 (def fibo (memo/fifo fibo :fifo/threshold 3))
 
-(first
- (drop 10000
-       ))
-
 (->> (map fibo (iterate inc 0N))  
      (drop 10000)
      (first))
 
 
-;; Base argument
+;; base argument
 
 (defn make-base [seed]
   (into {}
@@ -49,5 +52,5 @@
                (deref [this] v))])))
 
 (def fifo-twice
-  (memo/fifo twice (make-base {[3] "fiz"})))
+  (memo/fifo twice (make-base {[3] "fizz"})))
 
